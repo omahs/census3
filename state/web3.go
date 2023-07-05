@@ -528,11 +528,17 @@ func (w *Web3) calcPartialBalances(hc HoldersCandidates, currentLog types.Log) (
 			return hc, err
 		}
 		if logData.To == common.HexToAddress(NULL_ADDRESS) {
-			if fromBalance, exists := hc[logData.From]; exists {
-				hc[logData.From] = new(big.Int).Add(fromBalance, big.NewInt(1))
-			} else {
-				hc[logData.From] = big.NewInt(1)
-			}
+			break
+		}
+		if toBalance, exists := hc[logData.To]; exists {
+			hc[logData.To] = new(big.Int).Add(toBalance, big.NewInt(1))
+		} else {
+			hc[logData.To] = big.NewInt(1)
+		}
+		if fromBalance, exists := hc[logData.From]; exists {
+			hc[logData.From] = new(big.Int).Sub(fromBalance, big.NewInt(1))
+		} else {
+			hc[logData.From] = big.NewInt(-1)
 		}
 	case CONTRACT_TYPE_CUSTOM_NATION3_VENATION:
 		// This token contract is a bit special, token balances
