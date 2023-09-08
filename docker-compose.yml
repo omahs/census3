@@ -2,7 +2,7 @@ version: "3.7"
 
 services:
   census3:
-    image: ghcr.io/vocdoni/census3:main
+    image: ghcr.io/vocdoni/census3:stage
     build: .
     env_file: ".env"
     sysctls:
@@ -17,7 +17,7 @@ services:
       - "--dataDir=/app/data/census3"
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.census3.rule=Host(`${DOMAIN}`)"
+      - "traefik.http.routers.census3.rule=(Host(`${DOMAIN}`) || Host(`${DOMAIN2}`))"
       - "traefik.http.routers.census3.entrypoints=websecure"
       - "traefik.http.routers.census3.tls.certresolver=le"
       - "traefik.http.routers.census3.service=census3"
