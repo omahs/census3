@@ -4,13 +4,13 @@ type CreateTokenRequest struct {
 	ID      string `json:"id"`
 	Type    string `json:"type"`
 	Tag     string `json:"tag"`
-	ChainID int64  `json:"chainID"`
+	ChainID uint64 `json:"chainID"`
 }
 
 type GetTokenStatusResponse struct {
 	AtBlock  uint64 `json:"atBlock"`
 	Synced   bool   `json:"synced"`
-	Progress uint64 `json:"progress"`
+	Progress int    `json:"progress"`
 }
 
 type GetTokenResponse struct {
@@ -22,20 +22,20 @@ type GetTokenResponse struct {
 	TotalSupply     string                  `json:"totalSupply"`
 	Name            string                  `json:"name"`
 	Status          *GetTokenStatusResponse `json:"status"`
-	Size            uint32                  `json:"size"`
+	Size            uint64                  `json:"size"`
 	DefaultStrategy uint64                  `json:"defaultStrategy,omitempty"`
 	Tag             string                  `json:"tag,omitempty"`
-	ChainID         int64                   `json:"chainID"`
+	ChainID         uint64                  `json:"chainID"`
 }
 
 type GetTokensItem struct {
 	ID         string `json:"id"`
 	Type       string `json:"type"`
-	StartBlock uint64 `json:"startBlock"`
+	StartBlock int64  `json:"startBlock"`
 	Name       string `json:"name"`
 	Symbol     string `json:"symbol"`
 	Tag        string `json:"tag,omitempty"`
-	ChainID    int    `json:"chainID"`
+	ChainID    uint64 `json:"chainID"`
 }
 
 type GetTokensResponse struct {
@@ -50,7 +50,7 @@ type TokenHoldersResponse struct {
 	Holders map[string]string `json:"holders"`
 }
 
-type CreateCensusResquest struct {
+type CreateCensusRequest struct {
 	StrategyID  uint64 `json:"strategyId"`
 	BlockNumber uint64 `json:"blockNumber"`
 	Anonymous   bool   `json:"anonymous"`
@@ -65,7 +65,7 @@ type GetCensusResponse struct {
 	StrategyID uint64 `json:"strategyId"`
 	MerkleRoot string `json:"merkleRoot"`
 	URI        string `json:"uri"`
-	Size       int32  `json:"size"`
+	Size       uint64 `json:"size"`
 	Weight     string `json:"weight"`
 	Anonymous  bool   `json:"anonymous"`
 }

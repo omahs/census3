@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/gob"
 	"fmt"
+	"math"
 	"math/big"
 	"path/filepath"
 	"strconv"
@@ -46,8 +47,8 @@ var (
 // CensusDefinintion envolves the required parameters to create and use a
 // census merkle tree
 type CensusDefinition struct {
-	ID         int
-	StrategyID int
+	ID         uint64
+	StrategyID uint64
 	Type       models.Census_Type
 	URI        string
 	AuthToken  *uuid.UUID
@@ -58,7 +59,7 @@ type CensusDefinition struct {
 
 // NewCensusDefinition function returns a populated census definition with
 // the default values for some parameters and the supplied values for the rest.
-func NewCensusDefinition(id, strategyID int, holders map[common.Address]*big.Int, anonymous bool) *CensusDefinition {
+func NewCensusDefinition(id, strategyID uint64, holders map[common.Address]*big.Int, anonymous bool) *CensusDefinition {
 	def := &CensusDefinition{
 		ID:         id,
 		StrategyID: strategyID,
@@ -75,8 +76,8 @@ func NewCensusDefinition(id, strategyID int, holders map[common.Address]*big.Int
 }
 
 type PublishedCensus struct {
-	ID         int
-	StrategyID int
+	ID         uint64
+	StrategyID uint64
 	RootHash   []byte
 	URI        string
 	Dump       []byte
@@ -125,12 +126,14 @@ func (cdb *CensusDB) CreateAndPublish(def *CensusDefinition) (*PublishedCensus, 
 	// encode the holders
 	holdersAddresses, holdersValues := [][]byte{}, [][]byte{}
 	for addr, balance := range def.Holders {
-		value := def.tree.BigIntToBytes(balance)
-		key, err := def.tree.Hash(addr.Bytes())
-		if err != nil {
-			return nil, ErrAddingHoldersToCensusTree
+		key := addr.Bytes()[:censustree.DefaultMaxKeyLen]
+		if def.Type != models.Census_ARBO_POSEIDON {
+			if key, err = def.tree.Hash(addr.Bytes()); err != nil {
+				return nil, ErrAddingHoldersToCensusTree
+			}
 		}
 		holdersAddresses = append(holdersAddresses, key[:censustree.DefaultMaxKeyLen])
+		value := def.tree.BigIntToBytes(balance)
 		holdersValues = append(holdersValues, value)
 	}
 	// add the holders
@@ -236,6 +239,32 @@ func (cdb *CensusDB) delete(def *CensusDefinition) error {
 }
 
 // censusDBKey returns the db key of the census tree in the database given a censusID.
-func censusDBKey(censusID int) string {
-	return fmt.Sprintf("%s%x", censusDBprefix, []byte(strconv.Itoa(censusID)))
+func censusDBKey(censusID uint64) string {
+	return fmt.Sprintf("%s%x", censusDBprefix, []byte(fmt.Sprint(censusID)))
+}
+
+// InnerCensusID generates a unique identifier by concatenating the BlockNumber, StrategyID,
+// and a numerical representation of the Anonymous flag from a CreateCensusRequest struct.
+// The BlockNumber and StrategyID are concatenated as they are, and the Anonymous flag is
+// represented as 1 for true and 0 for false. This concatenated string is then converted
+// to a uint64 to create a unique identifier.
+func InnerCensusID(blockNumber, strategyID uint64, anonymous bool) uint64 {
+	// Force this to ensurte that can be stored in an int64 max but store into a uint64
+
+	// Convert the boolean to a uint32: 1 for true, 0 for false
+	var anonymousUint uint32
+	if anonymous {
+		anonymousUint = 1
+	}
+	// Concatenate the three values as strings
+	concatenated := fmt.Sprintf("%d%d%d", blockNumber, strategyID, anonymousUint)
+	// Convert the concatenated string back to a uint64
+	result, err := strconv.ParseUint(concatenated, 10, 64)
+	if err != nil {
+		panic(err)
+	}
+	if result > math.MaxInt64 {
+		panic(err)
+	}
+	return result
 }
