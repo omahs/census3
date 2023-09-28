@@ -1,5 +1,7 @@
 package api
 
+import "go.vocdoni.io/dvote/types"
+
 type CreateTokenRequest struct {
 	ID      string `json:"id"`
 	Type    string `json:"type"`
@@ -61,13 +63,13 @@ type CreateCensusResponse struct {
 }
 
 type GetCensusResponse struct {
-	CensusID   uint64 `json:"censusId"`
-	StrategyID uint64 `json:"strategyId"`
-	MerkleRoot string `json:"merkleRoot"`
-	URI        string `json:"uri"`
-	Size       uint64 `json:"size"`
-	Weight     string `json:"weight"`
-	Anonymous  bool   `json:"anonymous"`
+	CensusID   uint64         `json:"censusId"`
+	StrategyID uint64         `json:"strategyId"`
+	MerkleRoot types.HexBytes `json:"merkleRoot"`
+	URI        string         `json:"uri"`
+	Size       uint64         `json:"size"`
+	Weight     string         `json:"weight"`
+	Anonymous  bool           `json:"anonymous"`
 }
 
 type GetCensusesResponse struct {
